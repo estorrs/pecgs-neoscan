@@ -15,7 +15,7 @@ arguments:
   prefix: --f-opti-config
   valueFrom: /pecgs-neoscan/src/neoscan/config.ini
 baseCommand:
-- perl
+- python
 - /pecgs-neoscan/src/neoscan.py
 class: CommandLineTool
 cwlVersion: v1.0
