@@ -125,8 +125,6 @@ def run_neoscan(out_dir, log_dir, maf, bam, input_type, bed, ref_dir,
     logging.info('preparing input dir')
     snp_vcf_fp, indel_vcf_fp = setup_run(maf, bam, out_dir)
 
-    Path(log_dir).mkdir(parents=True, exist_ok=True)
-
     cmds = neoscan_commands(
         out_dir, log_dir, input_type, bed, ref_dir,
         optitype_script, f_allele, netmhc, f_opti_config)
@@ -136,7 +134,7 @@ def run_neoscan(out_dir, log_dir, maf, bam, input_type, bed, ref_dir,
     os.chdir(neoscan_dir)
 
     for i, cmd in enumerate(cmds):
-        logging.info(f'step {i}')
+        logging.info(f'step {i + 1}')
         logging.info(f'executing command: {cmd}')
         output = subprocess.check_output(cmd, shell=True)
         logging.info(f'step output: {output}')
@@ -145,9 +143,15 @@ def run_neoscan(out_dir, log_dir, maf, bam, input_type, bed, ref_dir,
 
 
 def main():
-    Path(args.out_dir).mkdir(parents=True, exist_ok=True)
+    modified_out_dir, modified_log_dir = args.out_dir, args.log_dir
+    if not os.path.isabs(args.out_dir):
+        modified_out_dir = os.path.join(os.getcwd(), args.out_dir)
+    if not os.path.isabs(args.log_dir):
+        modified_log_dir = os.path.join(os.getcwd(), args.log_dir)
+    Path(modified_out_dir).mkdir(parents=True, exist_ok=True)
+    Path(modified_log_dir).mkdir(parents=True, exist_ok=True)
     run_neoscan(
-        args.out_dir, args.log_dir, args.maf, args.bam,
+        modified_out_dir, modified_log_dir, args.maf, args.bam,
         args.input_type, args.bed, args.ref_dir, args.optitype_script,
         args.f_allele, args.netmhc, args.f_opti_config,
         args.neoscan_dir)
