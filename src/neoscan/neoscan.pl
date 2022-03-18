@@ -348,7 +348,8 @@ sub bsub_hla{
     print HLA "then\n";
 	print HLA 'if [ -f $IN_bam ]',"\n"; # input file exist
 	print HLA "then\n";
-    print HLA "$samtools sort -n \${HLA_IN} \${HLA_sorted}","\n";
+	#print HLA "$samtools sort -n \${HLA_IN} \${HLA_sorted}","\n";
+	print HLA "$samtools sort -n \${HLA_IN} -o \${HLA_sorted_bam}","\n";
 	print HLA "$samtools view \${HLA_sorted_bam} | perl -ne \'\$l=\$_; \$f_q1=\"$f_fq_1\"; \$f_q2=\"$f_fq_2\"; if(\$first==0) { open(OUT1,\">\$f_q1\"); open(OUT2,\">\$f_q2\");  \$first=1;}  \@ss=split(\"\\t\",\$l); \$flag=\$ss[1]; \$cigar=\$ss[5]; if((\$flag & 0x100) || (\$flag & 0x800) || (\$cigar=~/H/)) { next; } \$id=\$ss[0]; \$seq=\$ss[9]; \$q=\$ss[10];  if(\$id=~/\\/1\$/ || (\$flag & 0x40) ) { \$r1=\$id; \$r1=~s/\\/1\$//g; \$seq1=\$seq; \$q1=\$q; } if(\$id=~/\\/2\$/ || (\$flag & 0x80)) { \$r2=\$id; \$r2=~s/\\/2\$//g; \$seq2=\$seq; \$q2=\$q; } if((\$r1 eq \$r2)) { print OUT1 \"\@\",\$r1,\"/1\",\"\\n\"; print OUT1 \$seq1,\"\\n\"; print OUT1 \"+\",\"\\n\"; print OUT1 \$q1,\"\\n\"; print OUT2 \"\@\",\$r1,\"/2\",\"\\n\"; print OUT2 \$seq2,\"\\n\"; print OUT2 \"+\",\"\\n\"; print OUT2 \$q2,\"\\n\";}\'","\n";
 	print HLA "  fi\n";
     print HLA "fi\n"; 
@@ -366,7 +367,9 @@ sub bsub_hla{
     print HLA "then\n";
     print HLA "rm -rf $dir_hla\n";   
     print HLA "fi\n";
-	print HLA "$optitype -i $f_fq_1 $f_fq_2 -c $f_opti_config --rna -v -o $dir_hla"."\n";
+    print HLA "$optitype -i $f_fq_1 $f_fq_2 -d -o $dir_hla"."\n";
+
+    #print HLA "$optitype -i $f_fq_1 $f_fq_2 -c $f_opti_config --rna -v -o $dir_hla"."\n";
 #	print HLA "done\n";
     print HLA "fi\n";
 	print HLA "else\n";
@@ -411,6 +414,7 @@ sub bsub_hla{
 
 	}
 
+### calculating binding affinity between epitopes and MHC ##
 sub bsub_netmhc{
 
     my ($step_by_step) = @_;
@@ -419,81 +423,77 @@ sub bsub_netmhc{
     }else{
         $hold_job_file = $current_job_file;
     }
-    #my $cdhitReport = $sample_full_path."/".$sample_name.".fa.cdhitReport";
     $current_job_file = "j4_bind_".$sample_name.".sh";
     my $lsf_out=$lsf_file_dir."/".$current_job_file.".out";
     my $lsf_err=$lsf_file_dir."/".$current_job_file.".err";
     `rm $lsf_out`;
     `rm $lsf_err`;
-    #my $IN_sam = $sample_full_path."/".$sample_name.".exome.sam"; 
-	open(MHC, ">$job_files_dir/$current_job_file") or die $!;
+    open(MHC, ">$job_files_dir/$current_job_file") or die $!;
     print MHC "#!/bin/bash\n";
-    #print MHC "#BSUB -n 1\n";
-    #print MHC "#BSUB -R \"rusage[mem=30000]\"","\n";
-    #print MHC "#BSUB -M 30000000\n";
-	#print MHC "#BSUB -q ding-lab\n";
-   # print MHC "#BSUB -o $lsf_file_dir","/","$current_job_file.out\n";
-   # print MHC "#BSUB -e $lsf_file_dir","/","$current_job_file.err\n";
-   # print MHC "#BSUB -J $current_job_file\n";
-   # print MHC "#BSUB -w \"$hold_job_file\"","\n";
     print MHC "f_pep_indel_wt=".$sample_full_path."/$sample_name.indel.vcf.proteome-indel-wt.fasta\n";
     print MHC "f_pep_indel_mut=".$sample_full_path."/$sample_name.indel.vcf.proteome-indel-mut.fasta\n";
     print MHC "f_pep_snv_wt=".$sample_full_path."/$sample_name.snp.vcf.proteome-snv-wt.fasta\n";
     print MHC "f_pep_snv_mut=".$sample_full_path."/$sample_name.snp.vcf.proteome-snv-mut.fasta\n";
-	print MHC "f_pep_snv_mut_v1=".$sample_full_path."/$sample_name.snp.vcf.proteome-snv-mut.v1.fasta\n";		
-	print MHC "f_pep_snv_mut_v2=".$sample_full_path."/$sample_name.snp.vcf.proteome-snv-mut.v2.fasta\n";		
-#	print MHC "f_pep=".$sample_full_path."/$sample_name.pep.fa\n";
+    print MHC "f_pep_snv_mut_v1=".$sample_full_path."/$sample_name.snp.vcf.proteome-snv-mut.v1.fasta\n";        
+    print MHC "f_pep_snv_mut_v2=".$sample_full_path."/$sample_name.snp.vcf.proteome-snv-mut.v2.fasta\n";        
     print MHC "HLA_tsv=".$sample_full_path."/HLA_alleles.tsv\n";
-	print MHC "f_netMHC_result=".$sample_full_path."/netMHC4.0.out.append.txt\n";
-	print MHC "f_netMHC_result_snv=".$sample_full_path."/netMHC4.0.out.append.snv.txt\n";
-	print MHC "f_netMHC_result_indel=".$sample_full_path."/netMHC4.0.out.append.indel.txt\n";
-	#print MHC "f_out=".$sample_full_path."/result_neoantigen\n";
- 	print MHC " ".$run_script_path_perl."generate_mut_peptide_snv.pl $db_ref_bed \${f_pep_snv_wt} \${f_pep_snv_mut} \${f_pep_snv_mut_v1}\n";
-	print MHC " ".$run_script_path_perl."remove_duplicate_mut_peptide_snv.pl \${f_pep_snv_mut_v1} \${f_pep_snv_mut_v2}\n";
+    print MHC "f_netMHC_result=".$sample_full_path."/netMHC4.0.out.append.txt\n";
+    print MHC "f_netMHC_result_snv=".$sample_full_path."/netMHC4.0.out.append.snv.txt\n";
+    print MHC "f_netMHC_result_indel=".$sample_full_path."/netMHC4.0.out.append.indel.txt\n";
+    print MHC "f_out=".$sample_full_path."/result_neoantigen\n";
+    print MHC " ".$run_script_path_perl."generate_mut_peptide_snv.pl $db_ref_bed \${f_pep_snv_wt} \${f_pep_snv_mut} \${f_pep_snv_mut_v1}\n";
+    print MHC " ".$run_script_path_perl."remove_duplicate_mut_peptide_snv.pl \${f_pep_snv_mut_v1} \${f_pep_snv_mut_v2}\n";
     print MHC  " ".$run_script_path_python."runNetMHC4.py -a \${HLA_tsv} -f \${f_pep_snv_mut_v2} -p 8,9,10,11 -o $sample_full_path -n $netMHC -v $f_allele"."\n";
-	print MHC "mv \${f_netMHC_result} \${f_netMHC_result_snv}\n"; 
-	print MHC  " ".$run_script_path_python."runNetMHC4.py -a \${HLA_tsv} -f \${f_pep_indel_mut} -p 8,9,10,11 -o $sample_full_path -n $netMHC -v $f_allele"."\n";
-	print MHC "mv \${f_netMHC_result} \${f_netMHC_result_indel}\n";
-
-### check if netMHC prediction is successfully finished, indel    
-	print MHC 'if [ -f $f_netMHC_result_indel ] ',"\n"; # file exist 
-	print MHC "then\n";
-	print MHC '	grep "Error" ${f_netMHC_result_indel}',"\n";  
-	print MHC '	CHECK=$?',"\n";
-	print MHC '	while [ ${CHECK} -eq 0 ] ',"\n"; # grep success, file not finish
-	print MHC "	do\n";
+    print MHC "mv \${f_netMHC_result} \${f_netMHC_result_snv}\n"; 
     print MHC  " ".$run_script_path_python."runNetMHC4.py -a \${HLA_tsv} -f \${f_pep_indel_mut} -p 8,9,10,11 -o $sample_full_path -n $netMHC -v $f_allele"."\n";
     print MHC "mv \${f_netMHC_result} \${f_netMHC_result_indel}\n";
-	print MHC '		grep "Error" ${f_netMHC_result_indel}',"\n";
-	print MHC '		CHECK=$?',"\n";
-	print MHC "	done\n";
- 	print MHC "     fi\n";	
 
-### check if netMHC prediction is successfully finished, indel    
-    print MHC 'if [ -f $f_netMHC_result_snv ] ',"\n"; # file exist 
+### check if netMHC prediction is successfully finished, indel
+    print MHC 'if [ -s $f_pep_indel_mut ] ',"\n"; # file exist  
+    print MHC "then\n";
+    print MHC 'if [ -f $f_netMHC_result_indel ] ',"\n"; # file exist
+    print MHC "then\n";
+    print MHC ' grep "Error" ${f_netMHC_result_indel}',"\n";
+    print MHC ' CHECK=$?',"\n";
+    print MHC ' while [ ${CHECK} -eq 0 ] ',"\n"; # grep success, file not finish
+    print MHC " do\n";
+    print MHC  " ".$run_script_path_python."runNetMHC4.py -a \${HLA_tsv} -f \${f_pep_indel_mut} -p 8,9,10,11 -o $sample_full_path -n $netMHC -v $f_allele"."\n";
+    print MHC "mv \${f_netMHC_result} \${f_netMHC_result_indel}\n";
+    print MHC '     grep "Error" ${f_netMHC_result_indel}',"\n";
+    print MHC '     CHECK=$?',"\n";
+    print MHC " done\n";
+    print MHC "     fi\n";
+    print MHC "     fi\n";
+### check if netMHC prediction is successfully finished, snv  
+   
+    print MHC 'if [ -s $f_pep_snv_mut_v2 ] ',"\n"; # file exist  
+    print MHC "then\n"; 
+    print MHC 'if [ -f $f_netMHC_result_snv ] ',"\n"; # file exist
     print MHC "then\n";
     print MHC ' grep "Error" ${f_netMHC_result_snv}',"\n";
     print MHC ' CHECK=$?',"\n";
     print MHC ' while [ ${CHECK} -eq 0 ] ',"\n"; # grep success, file not finish
     print MHC " do\n";
     print MHC  " ".$run_script_path_python."runNetMHC4.py -a \${HLA_tsv} -f \${f_pep_snv_mut_v2} -p 8,9,10,11 -o $sample_full_path -n $netMHC -v $f_allele"."\n";
-    print MHC "mv \${f_netMHC_result} \${f_netMHC_result_snv}\n";    
-	print MHC '     grep "Error" ${f_netMHC_result_snv}',"\n";
+    print MHC "mv \${f_netMHC_result} \${f_netMHC_result_snv}\n";
+    print MHC '     grep "Error" ${f_netMHC_result_snv}',"\n";
     print MHC '     CHECK=$?',"\n";
     print MHC " done\n";
     print MHC "     fi\n";
-
-	close MHC;
+    print MHC "     fi\n";
+    close MHC;
 
     my $sh_file=$job_files_dir."/".$current_job_file;
 
-  #  $bsub_com = "bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(registry.gsc.wustl.edu/genome/genome_perl_environment)\' -o $lsf_out -e $lsf_err sh $sh_file\n";
-
-  # $bsub_com = "LSF_DOCKER_PRESERVE_ENVIRONMENT=false bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(scao/dailybox)\' -o $lsf_out -e $lsf_err sh $sh_file\n";
+    #$bsub_com = "LSF_DOCKER_PRESERVE_ENVIRONMENT=false bsub -g /$compute_username/$group_name -q $q_name -n 1 -R \"select[mem>20000] rusage[mem=20000]\" -M 20000000 -a \'docker(scao/dailybox)\' -o $lsf_out -e $lsf_err sh $sh_file\n";
     $bsub_com = "bash $sh_file\n";
+   #$bsub_com = "bsub < $job_files_dir/$current_job_file\n";
+   #    system ( $bsub_com );
+
+#    $bsub_com = "LSF_DOCKER_PRESERVE_ENVIRONMENT=false bsub -q dinglab -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(scao/dailybox)\' -o $lsf_out -e $lsf_err sh $sh_file\n";
 
     system ( $bsub_com );
-	
+    
 }
 
 sub bsub_parsemhc{

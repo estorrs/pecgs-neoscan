@@ -89,8 +89,10 @@ def setup_run(maf, bam, out_dir):
 
     # create sym links for bam
     os.symlink(bam, os.path.join(input_dir, 'sample.bam'))
-    if '.bam.bai' in bam:
+    try:
         os.symlink(f'{bam}.bai', os.path.join(input_dir, 'sample.bam.bai'))
+    except:
+        logging.info(f'could not symlink {bam}.bai')
 
     return snp_vcf_fp, indel_vcf_fp
 
