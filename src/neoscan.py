@@ -49,8 +49,8 @@ parser.add_argument('--f-opti-config', type=str,
 args = parser.parse_args()
 
 
-def preprocess_maf(maf, snp_vcf_fp, indel_vcf_fp):
-    maf = pd.read_csv('/data/sandbox/test.maf', sep='\t', header=1)
+def preprocess_maf(maf_fp, snp_vcf_fp, indel_vcf_fp):
+    maf = pd.read_csv(maf_fp, sep='\t', header=1)
 
     valid = ['SNP']
     snp = maf[[True if s in valid else False
