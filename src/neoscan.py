@@ -37,6 +37,15 @@ parser.add_argument('--neoscan-dir', type=str,
 parser.add_argument('--optitype-script', type=str,
     help='location of optitype script')
 
+parser.add_argument('--f-allele', type=str,
+    help='f allele list')
+
+parser.add_argument('--netmhc', type=str,
+    help='netMHC')
+
+parser.add_argument('--f-opti-config', type=str,
+    help='config opti')
+
 args = parser.parse_args()
 
 
@@ -63,7 +72,7 @@ def preprocess_maf(maf, snp_vcf_fp, indel_vcf_fp):
     indel.to_csv(indel_vcf_fp, sep='\t', index=False, header=False)
 
 
-def setup_run(maf, out_dir):
+def setup_run(maf, bam, out_dir):
     """
     Setup directory structure that neoscan expects.
 
@@ -78,23 +87,32 @@ def setup_run(maf, out_dir):
     indel_vcf_fp = os.path.join(input_dir, 'sample.indel.vcf')
     preprocess_maf(maf, snp_vcf_fp, indel_vcf_fp)
 
+    # create sym links for bam
+    os.symlink(bam, os.path.join(input_dir, 'sample.bam'))
+    if '.bam.bai' in bam:
+        os.symlink(f'{bam}.bai', os.path.join(input_dir, 'sample.bam.bai'))
+
     return snp_vcf_fp, indel_vcf_fp
 
 
-def neoscan_commands(out_dir, log_dir, bam, input_type, bed, ref_dir,
-                     optitype_script):
+def neoscan_commands(
+        out_dir, log_dir, input_type, bed, ref_dir,
+        optitype_script, f_allele, netmhc, f_opti_config):
     cmds = []
     rna = '1' if input_type == 'rna' else '0'
-    for step in range(1, 6):
+    for step in range(1, 7):
         pieces = [
             f'perl neoscan.pl',
             f'--rdir {out_dir}',
-            f'--log {log_dir}',
-            f'--bamfq {bam}',
             f'--bed {bed}',
-            f'--rna {rna}',
             f'--refdir {ref_dir}',
             f'--optitype {optitype_script}',
+            f'--fallele {f_allele}',
+            f'--netmhc {netmhc}',
+            f'--fopticonfig {f_opti_config}',
+            f'--bam 1',
+            f'--rna {rna}',
+            f'--log {log_dir}',
             f'--step {step}',
         ]
         cmd = ' '.join(pieces)
@@ -103,15 +121,15 @@ def neoscan_commands(out_dir, log_dir, bam, input_type, bed, ref_dir,
 
 
 def run_neoscan(out_dir, log_dir, maf, bam, input_type, bed, ref_dir,
-                optitype_script, neoscan_dir):
+                optitype_script, f_allele, netmhc, f_opti_config, neoscan_dir):
     logging.info('preparing input dir')
-    snp_vcf_fp, indel_vcf_fp = setup_run(maf, out_dir)
+    snp_vcf_fp, indel_vcf_fp = setup_run(maf, bam, out_dir)
 
     Path(log_dir).mkdir(parents=True, exist_ok=True)
 
     cmds = neoscan_commands(
-        out_dir, log_dir, bam, input_type, bed, ref_dir,
-        optitype_script)
+        out_dir, log_dir, input_type, bed, ref_dir,
+        optitype_script, f_allele, netmhc, f_opti_config)
 
     # change cwd so neoscan works
     old_cwd = os.getcwd()
@@ -131,6 +149,7 @@ def main():
     run_neoscan(
         args.out_dir, args.log_dir, args.maf, args.bam,
         args.input_type, args.bed, args.ref_dir, args.optitype_script,
+        args.f_allele, args.netmhc, args.f_opti_config,
         args.neoscan_dir)
 
 

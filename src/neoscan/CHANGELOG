@@ -1,3 +1,7 @@
 original code from https://github.com/ding-lab/neoscan commit b31fa62
 
-Made changes to neoscan.pl to take in optitype script as an input
+Made changes to neoscan.pl to take all hardcoded paths as inputs to script
+
+Made changes to config.ini to point razors3 to /miniconda
+
+

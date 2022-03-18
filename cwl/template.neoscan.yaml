@@ -4,8 +4,14 @@ bam:
 bed:
   class: File
   path: a/file/path
+f_allele:
+  class: File
+  path: a/file/path
 input_type: a_string
 maf:
+  class: File
+  path: a/file/path
+netmhc:
   class: File
   path: a/file/path
 ref_dir:

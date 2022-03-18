@@ -11,6 +11,9 @@ arguments:
 - position: 0
   prefix: --optitype-script
   valueFrom: /miniconda/envs/neoscan/bin/OptiPathPipeline.py
+- position: 0
+  prefix: --f-opti-config
+  valueFrom: /pecgs-neoscan/src/neoscan/config.ini
 baseCommand:
 - perl
 - /pecgs-neoscan/src/neoscan.py
@@ -38,6 +41,16 @@ inputs:
     position: '0'
     prefix: --bed
   type: File
+- id: f_allele
+  inputBinding:
+    position: '0'
+    prefix: --f-allele
+  type: File
+- id: netmhc
+  inputBinding:
+    position: '0'
+    prefix: --netmhc
+  type: File
 - default: dna
   id: input_type
   inputBinding:
@@ -61,7 +74,7 @@ requirements:
 - class: DockerRequirement
   dockerPull: estorrs/pecgs-neoscan:0.0.1
 - class: ResourceRequirement
-  ramMin: 50000
+  ramMin: 28000
 - class: EnvVarRequirement
   envDef:
     PATH: $(inputs.environ_PATH)

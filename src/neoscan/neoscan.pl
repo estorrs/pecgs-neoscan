@@ -65,6 +65,9 @@ my $db_ref_bed="/gscmnt/gc2518/dinglab/scao/db/ensembl38.85/proteome-first.bed";
 #my $db_ref_bed="/gscmnt/gc2518/dinglab/scao/db/refseq_hg38_june29/proteome.bed";
 my $h38_fa="/gscmnt/gc2518/dinglab/scao/db/refseq_hg38_june29";
 my $optitype="/miniconda/envs/neoscan/bin/OptiTypePipeline.py"; 
+my $f_allele="/gscmnt/gc2523/dinglab/neoantigen/netMHC-4.0/Linux_x86_64/data/allelelist";
+my $netMHC="/gscmnt/gc2523/dinglab/neoantigen/netMHC-4.0/netMHC";
+my $f_opti_config = "/gscmnt/gc2518/dinglab/scao/home/git/neoscan/config.ini";
  
 my $status = &GetOptions (
       "step=i" => \$step_number,
@@ -72,6 +75,9 @@ my $status = &GetOptions (
 	  "bed=s" => \$db_ref_bed,
 	  "refdir=s" => \$h38_fa,
 	  "optitype=s" => \$optitype,
+	  "fallele=s" => \$f_allele,
+	  "netmhc=s" => \$netMHC,
+	  "fopticonfig=s" => \$f_opti_config,
  	  "bam=i" => \$s_bam_fq,
 	  "rna=i" => \$s_rna,		
       "log=s"  => \$log_dir,
@@ -113,21 +119,18 @@ my $lsf_file_dir = $HOME1."/LSF_DIR_Neo";
 
 ## hlaminer for genotype, netMHC for neoantigen prediction ##
 
-my $db_hla_abc_cds="/gscmnt/gc2523/dinglab/neoantigen/human_DB/HLA_ABC_CDS.fasta";
-my $f_allele="/gscmnt/gc2523/dinglab/neoantigen/netMHC-4.0/Linux_x86_64/data/allelelist";
-my $netMHC="/gscmnt/gc2523/dinglab/neoantigen/netMHC-4.0/netMHC";
-my $samtools="/usr/bin/samtools";
-#my $db_ref_bed="/gscmnt/gc2518/dinglab/scao/db/refseq_hg38_june29/proteome.bed";
-#my $h38_fa="/gscmnt/gc2518/dinglab/scao/db/refseq_hg38_june29";
-my $f_opti_config = "/gscmnt/gc2518/dinglab/scao/home/git/neoscan/config.ini";
+my $db_hla_abc_cds="/gscmnt/gc2523/dinglab/neoantigen/human_DB/HLA_ABC_CDS.fasta"; #not used
+my $samtools="samtools";
  
 #my $db_cdna="/gscmnt/gc3027/dinglab/medseq/fasta/human/Homo_sapiens.GRCh37.70.cdna.all.fa";
 #my $db_sanger_qs="/gscmnt/gc2523/dinglab/neoantigen/neoantigen-scan/quality_sanger.table.2col.tsv";
 
 my $run_script_path = `dirname $0`;
 chomp $run_script_path;
-my $run_script_path_perl = "/usr/bin/perl ".$run_script_path."/";
-my $run_script_path_python = "/usr/bin/python ".$run_script_path."/";
+#my $run_script_path_perl = "/usr/bin/perl ".$run_script_path."/";
+#my $run_script_path_python = "/usr/bin/python ".$run_script_path."/";
+my $run_script_path_perl = "perl ".$run_script_path."/";
+my $run_script_path_python = "python ".$run_script_path."/";
 #my $hold_RM_job = "norm";
 my $current_job_file = "";#cannot be empty
 my $hold_job_file = "";
@@ -214,7 +217,8 @@ sub bsub_fa{
     #$bsub_com = "bsub < $job_files_dir/$current_job_file\n";
     my $sh_file=$job_files_dir."/".$current_job_file;
 
-    $bsub_com = "bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(registry.gsc.wustl.edu/genome/genome_perl_environment)\' -o $lsf_out -e $lsf_err sh $sh_file\n"; 
+    #  $bsub_com = "bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(registry.gsc.wustl.edu/genome/genome_perl_environment)\' -o $lsf_out -e $lsf_err sh $sh_file\n"; 
+    $bsub_com = "bash $sh_file\n"; 
 
     system ( $bsub_com );
 }
@@ -272,8 +276,8 @@ sub bsub_pep{
     my $sh_file=$job_files_dir."/".$current_job_file;
 
    # $bsub_com = "bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(registry.gsc.wustl.edu/genome/genome_perl_environment)\' -w $hold_job_file -o $lsf_out -e $lsf_err sh $sh_file\n"; 
-    $bsub_com = "bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(registry.gsc.wustl.edu/genome/genome_perl_environment)\' -o $lsf_out -e $lsf_err sh $sh_file\n";
-   #$bsub_com = "bsub < $job_files_dir/$current_job_file\n";
+   # $bsub_com = "bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(registry.gsc.wustl.edu/genome/genome_perl_environment)\' -o $lsf_out -e $lsf_err sh $sh_file\n";
+    $bsub_com = "bash $sh_file\n";
     system ( $bsub_com );
 }
 
@@ -401,7 +405,8 @@ sub bsub_hla{
 	print HLA "fi\n";
    	close HLA;
     my $sh_file=$job_files_dir."/".$current_job_file;
-    $bsub_com = "bsub -q research-hpc -n 1 -R \"select[mem>200000] rusage[mem=200000]\" -M 200000000 -a \'docker(registry.gsc.wustl.edu/genome/genome_perl_environment)\' -w \"$hold_job_file\" -o $lsf_out -e $lsf_err sh $sh_file\n";
+    # $bsub_com = "bsub -q research-hpc -n 1 -R \"select[mem>200000] rusage[mem=200000]\" -M 200000000 -a \'docker(registry.gsc.wustl.edu/genome/genome_perl_environment)\' -w \"$hold_job_file\" -o $lsf_out -e $lsf_err sh $sh_file\n";
+    $bsub_com = "bash $sh_file\n";
     system ( $bsub_com );
 
 	}
@@ -484,7 +489,8 @@ sub bsub_netmhc{
 
   #  $bsub_com = "bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(registry.gsc.wustl.edu/genome/genome_perl_environment)\' -o $lsf_out -e $lsf_err sh $sh_file\n";
 
-    $bsub_com = "LSF_DOCKER_PRESERVE_ENVIRONMENT=false bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(scao/dailybox)\' -o $lsf_out -e $lsf_err sh $sh_file\n";
+  # $bsub_com = "LSF_DOCKER_PRESERVE_ENVIRONMENT=false bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(scao/dailybox)\' -o $lsf_out -e $lsf_err sh $sh_file\n";
+    $bsub_com = "bash $sh_file\n";
 
     system ( $bsub_com );
 	
@@ -535,7 +541,8 @@ sub bsub_parsemhc{
 	close PMHC;
     my $sh_file=$job_files_dir."/".$current_job_file;
 
-    $bsub_com = "bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(registry.gsc.wustl.edu/genome/genome_perl_environment)\' -w \"$hold_job_file\" -o $lsf_out -e $lsf_err sh $sh_file\n";
+    # $bsub_com = "bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(registry.gsc.wustl.edu/genome/genome_perl_environment)\' -w \"$hold_job_file\" -o $lsf_out -e $lsf_err sh $sh_file\n";
+    $bsub_com = "bash $sh_file\n";
     system ( $bsub_com );
 }
 
@@ -575,7 +582,8 @@ sub bsub_final_report()
 
     my $sh_file=$job_files_dir."/".$current_job_file;
    # $bsub_com = "bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(registry.gsc.wustl.edu/genome/genome_perl_environment)\' -w $hold_job_file -o $lsf_out -e $lsf_err sh $sh_file\n"; 
-    $bsub_com = "bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(registry.gsc.wustl.edu/genome/genome_perl_environment)\' -w \"$hold_job_file\" -o $lsf_out -e $lsf_err sh $sh_file\n";
+   #  $bsub_com = "bsub -q research-hpc -n 1 -R \"select[mem>30000] rusage[mem=30000]\" -M 30000000 -a \'docker(registry.gsc.wustl.edu/genome/genome_perl_environment)\' -w \"$hold_job_file\" -o $lsf_out -e $lsf_err sh $sh_file\n";
+    $bsub_com = "bash $sh_file\n";
    #$bsub_com = "bsub < $job_files_dir/$current_job_file\n";
     system ( $bsub_com );
     
