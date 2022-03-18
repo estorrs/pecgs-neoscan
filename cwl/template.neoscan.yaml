@@ -1,0 +1,13 @@
+bam:
+  class: File
+  path: a/file/path
+bed:
+  class: File
+  path: a/file/path
+input_type: a_string
+maf:
+  class: File
+  path: a/file/path
+ref_dir:
+  class: Directory
+  path: a/dir/path

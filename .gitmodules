@@ -1,0 +1,3 @@
+[submodule "submodules/neoscan"]
+	path = submodules/neoscan
+	url = https://github.com/ding-lab/neoscan
