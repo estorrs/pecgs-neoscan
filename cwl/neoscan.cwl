@@ -10,7 +10,7 @@ arguments:
   valueFrom: /pecgs-neoscan/src/neoscan
 - position: 0
   prefix: --optitype-script
-  valueFrom: /miniconda/envs/neoscan/bin/OptiPathPipeline.py
+  valueFrom: /miniconda/envs/neoscan/bin/OptiTypePipeline.py
 - position: 0
   prefix: --f-opti-config
   valueFrom: /pecgs-neoscan/src/neoscan/config.ini
