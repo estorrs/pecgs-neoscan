@@ -10,7 +10,7 @@ import getopt
 from subprocess import Popen, PIPE, STDOUT
 
 def usage():
-    print """
+    print("""
     python runNetMHC.py -a <hla-allele-file> -f <peptide-fa> -p <peptide-lengths>
                          -o <output-dir> -n <path-to-netMHC4.0> -v <available-alleles-file>
                          -x "<netMHC4.0-options>" -k
@@ -31,7 +31,8 @@ def usage():
         Please type netMHC4.0 to see after installation
 
     Version:                    1.0.0
-          """
+          """)
+
 
 #parameters
 hla_allele_file = ''
@@ -106,10 +107,10 @@ def get_avail_allele():
     while True:
         line=f.readline()
         if line=="":
-           break
+            break
         else:
-           tmp=line.split("\t")
-           avail_allele.append(tmp[0])
+            tmp=line.split("\t")
+            avail_allele.append(tmp[0])
     f.close()
 
 hla_allele_dic = {}
@@ -167,15 +168,15 @@ def run_netMHC4():
 
 
     f=open(netMHC4_file,"w")
-    f.close();
+    f.close()
 
 
     for x in range(len(ks)):
         klen=int(ks[x])
 
-        cmd = path_to_netMHC4 +' -a '+ allele_strings + ' -l ' + str(klen) + ' ' + all_peptide_file;
-        print(cmd)	
-    	p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+        cmd = path_to_netMHC4 +' -a '+ allele_strings + ' -l ' + str(klen) + ' ' + all_peptide_file 
+        print(cmd)
+        p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         output = p.stdout.read()
         f=open(netMHC4_file,"a")
         f.write(output)
@@ -187,14 +188,14 @@ def remove_tmp():
 
 def main(argv):
     setDefault()
-    print hla_allele_file,all_peptide_file,peptide_lengths,avail_file
+    print(hla_allele_file,all_peptide_file,peptide_lengths,avail_file)
     getParameters(argv[1:])
-    print hla_allele_file,all_peptide_file,peptide_lengths,avail_file
+    print(hla_allele_file,all_peptide_file,peptide_lengths,avail_file)
     if hla_allele_file=='' or all_peptide_file=='' or peptide_lengths=='' or avail_file=='':
         usage()
-        exit(1);
+        exit(1)
     global output_dir
-    output_dir=os.path.realpath(output_dir);
+    output_dir=os.path.realpath(output_dir)
 #    make_dir(output_dir)
 #    make_dir(output_dir+'/tmp')
     get_avail_allele()
