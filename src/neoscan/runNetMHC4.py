@@ -7,6 +7,7 @@ import sys
 import os
 import math
 import getopt
+import traceback
 from subprocess import Popen, PIPE, STDOUT
 
 def usage():
@@ -63,7 +64,7 @@ def getParameters(argv):
                                                              "path-to-netMHC4=",
                                                              "netMHC4-options="])
     except getopt.GetoptError:
-        print "Except"
+        traceback.print_exc()
         usage()
         sys.exit(1)
     for opt, arg in opts:
