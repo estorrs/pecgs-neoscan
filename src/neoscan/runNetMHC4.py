@@ -9,6 +9,7 @@ import math
 import getopt
 import traceback
 from subprocess import Popen, PIPE, STDOUT
+from pathlib import Path
 
 def usage():
     print("""
@@ -97,8 +98,9 @@ def getParameters(argv):
             netMHC4_options = arg
 
 def make_dir(path):
-    if not os.path.exists(path):
-        os.mkdir( path, 0755 )
+    Path(path).mkdir(parents=True, exist_ok=True)
+#     if not os.path.exists(path):
+#         os.mkdir( path, 0755 )
 
 avail_allele = []
 
