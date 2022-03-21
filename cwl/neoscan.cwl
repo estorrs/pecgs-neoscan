@@ -74,7 +74,7 @@ requirements:
 - class: DockerRequirement
   dockerPull: estorrs/pecgs-neoscan:0.0.1
 - class: ResourceRequirement
-  ramMin: 28000
+  ramMin: 100000
 - class: EnvVarRequirement
   envDef:
     PATH: $(inputs.environ_PATH)
