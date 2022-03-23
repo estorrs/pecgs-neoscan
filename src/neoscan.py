@@ -7,7 +7,6 @@ import argparse
 import os
 import logging
 import subprocess
-from pathlib import Path
 
 import pandas as pd
 
@@ -83,10 +82,14 @@ def setup_run(maf, bam, out_dir):
 
     Also preprocessing on snp and indel vcf files
     """
-    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    # Path(out_dir).mkdir(parents=True, exist_ok=True)
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
 
     input_dir = os.path.join(out_dir, 'sample')
-    Path(input_dir).mkdir(parents=True, exist_ok=True)
+    # Path(input_dir).mkdir(parents=True, exist_ok=True)
+    if not os.path.exists(input_dir):
+        os.makedirs(input_dir)
 
     snp_vcf_fp = os.path.join(input_dir, 'sample.snp.vcf')
     indel_vcf_fp = os.path.join(input_dir, 'sample.indel.vcf')
@@ -155,8 +158,12 @@ def main():
         modified_out_dir = os.path.join(os.getcwd(), args.out_dir)
     if not os.path.isabs(args.log_dir):
         modified_log_dir = os.path.join(os.getcwd(), args.log_dir)
-    Path(modified_out_dir).mkdir(parents=True, exist_ok=True)
-    Path(modified_log_dir).mkdir(parents=True, exist_ok=True)
+    # Path(modified_out_dir).mkdir(parents=True, exist_ok=True)
+    if not os.path.exists(modified_out_dir):
+        os.makedirs(modified_out_dir)
+    # Path(modified_log_dir).mkdir(parents=True, exist_ok=True)
+    if not os.path.exists(modified_log_dir):
+        os.makedirs(modified_log_dir)
     run_neoscan(
         modified_out_dir, modified_log_dir, args.maf, args.bam,
         args.input_type, args.bed, args.ref_dir, args.optitype_script,
