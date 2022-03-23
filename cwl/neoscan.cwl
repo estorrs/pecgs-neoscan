@@ -10,7 +10,7 @@ arguments:
   valueFrom: /pecgs-neoscan/src/neoscan
 - position: 0
   prefix: --optitype-script
-  valueFrom: /miniconda/envs/neoscan/bin/OptiTypePipeline.py
+  valueFrom: /pecgs-neoscan/src/neoscan/OptiTypePipeline.py
 - position: 0
   prefix: --f-opti-config
   valueFrom: /pecgs-neoscan/src/neoscan/config.ini
@@ -57,7 +57,7 @@ inputs:
     position: '0'
     prefix: --input-type
   type: string?
-- default: /miniconda/envs/neoscan/bin:$PATH
+- default: /usr/local/bin/OptiType:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/conda/bin:/home/biodocker/bin:/miniconda/envs/neoscan/bin:/miniconda/bin:$PATH
   id: environ_PATH
   type: string?
 label: neoscan
