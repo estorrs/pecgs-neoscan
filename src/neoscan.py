@@ -70,7 +70,7 @@ def preprocess_maf(maf_fp, snp_vcf_fp, indel_vcf_fp):
     indel = indel[['Chromosome', 'Start_Position', 'Reference_Allele',
                    'Tumor_Seq_Allele2', 'Hugo_Symbol', 'HGVSp_Short']]
     indel['type'] = 'Somatic'
-    logging.info('INDEL vcf input has shape {s}'.format(indel.shape))
+    logging.info('INDEL vcf input has shape {s}'.format(s=indel.shape))
 
     snp.to_csv(snp_vcf_fp, sep='\t', index=False, header=False)
     indel.to_csv(indel_vcf_fp, sep='\t', index=False, header=False)
