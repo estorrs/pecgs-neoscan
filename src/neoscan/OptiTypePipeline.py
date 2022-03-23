@@ -1,4 +1,4 @@
-#!/gscmnt/gc2518/dinglab/scao/home/tools/anaconda2/bin/python
+#!/usr/bin/python
 # coding=utf-8
 """
 ###################################################################
