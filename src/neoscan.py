@@ -1,3 +1,8 @@
+"""
+neoscan.pl wrapper
+
+UPDATE: converting to 2.7 so it works with optitype
+"""
 import argparse
 import os
 import logging
@@ -58,7 +63,7 @@ def preprocess_maf(maf_fp, snp_vcf_fp, indel_vcf_fp):
     snp = snp[['Chromosome', 'Start_Position', 'Reference_Allele',
                'Tumor_Seq_Allele2', 'Hugo_Symbol', 'HGVSp_Short']]
     snp['type'] = 'Somatic'
-    logging.info(f'SNP vcf input has shape {snp.shape}')
+    logging.info('SNP vcf input has shape {s}'.format(s=snp.shape))
 
     valid = ['INS', 'DEL']
     indel = maf[[True if s in valid else False
@@ -66,7 +71,7 @@ def preprocess_maf(maf_fp, snp_vcf_fp, indel_vcf_fp):
     indel = indel[['Chromosome', 'Start_Position', 'Reference_Allele',
                    'Tumor_Seq_Allele2', 'Hugo_Symbol', 'HGVSp_Short']]
     indel['type'] = 'Somatic'
-    logging.info(f'INDEL vcf input has shape {indel.shape}')
+    logging.info('INDEL vcf input has shape {s}'.format(indel.shape))
 
     snp.to_csv(snp_vcf_fp, sep='\t', index=False, header=False)
     indel.to_csv(indel_vcf_fp, sep='\t', index=False, header=False)
@@ -90,9 +95,9 @@ def setup_run(maf, bam, out_dir):
     # create sym links for bam
     os.symlink(bam, os.path.join(input_dir, 'sample.bam'))
     try:
-        os.symlink(f'{bam}.bai', os.path.join(input_dir, 'sample.bam.bai'))
+        os.symlink('{b}.bai'.format(b=bam), os.path.join(input_dir, 'sample.bam.bai'))
     except:
-        logging.info(f'could not symlink {bam}.bai')
+        logging.info('could not symlink {b}.bai'.format(b=bam))
 
     return snp_vcf_fp, indel_vcf_fp
 
@@ -104,18 +109,18 @@ def neoscan_commands(
     rna = '1' if input_type == 'rna' else '0'
     for step in range(1, 7):
         pieces = [
-            f'perl neoscan.pl',
-            f'--rdir {out_dir}',
-            f'--bed {bed}',
-            f'--refdir {ref_dir}',
-            f'--optitype {optitype_script}',
-            f'--fallele {f_allele}',
-            f'--netmhc {netmhc}',
-            f'--fopticonfig {f_opti_config}',
-            f'--bam 1',
-            f'--rna {rna}',
-            f'--log {log_dir}',
-            f'--step {step}',
+            'perl neoscan.pl',
+            '--rdir {o}'.format(o=out_dir),
+            '--bed {b}'.format(b=bed),
+            '--refdir {r}'.format(r=ref_dir),
+            '--optitype {o}'.format(o=optitype_script),
+            '--fallele {f}'.format(f=f_allele),
+            '--netmhc {n}'.format(n=netmhc),
+            '--fopticonfig {f}'.format(f=f_opti_config),
+            '--bam 1',
+            '--rna {r}'.format(r=rna),
+            '--log {lg}'.format(lg=log_dir),
+            '--step {s}'.format(s=step),
         ]
         cmd = ' '.join(pieces)
         cmds.append(cmd)
@@ -136,10 +141,10 @@ def run_neoscan(out_dir, log_dir, maf, bam, input_type, bed, ref_dir,
     os.chdir(neoscan_dir)
 
     for i, cmd in enumerate(cmds):
-        logging.info(f'step {i + 1}')
-        logging.info(f'executing command: {cmd}')
+        logging.info('step {index}'.format(index=i + 1))
+        logging.info('executing command: {c}'.format(c=cmd))
         output = subprocess.check_output(cmd, shell=True)
-        logging.info(f'step output: {output}')
+        logging.info('step output: {o}'.format(o=output))
 
     os.chdir(old_cwd)
 
