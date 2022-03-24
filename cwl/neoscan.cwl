@@ -14,6 +14,12 @@ arguments:
 - position: 0
   prefix: --f-opti-config
   valueFrom: /pecgs-neoscan/src/neoscan/config.ini
+- position: 0
+  prefix: --netmhc
+  valueFrom: /pecgs-neoscan/src/netmhc/netMHC-4.0/netMHC
+- position: 0
+  prefix: --f-allele
+  valueFrom: /pecgs-neoscan/src/netmhc/netMHC-4.0/data/allelelist
 baseCommand:
 - /usr/bin/python
 - /pecgs-neoscan/src/neoscan.py
@@ -40,16 +46,6 @@ inputs:
   inputBinding:
     position: '0'
     prefix: --bed
-  type: File
-- id: f_allele
-  inputBinding:
-    position: '0'
-    prefix: --f-allele
-  type: File
-- id: netmhc
-  inputBinding:
-    position: '0'
-    prefix: --netmhc
   type: File
 - default: dna
   id: input_type

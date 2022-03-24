@@ -7,6 +7,7 @@ import argparse
 import os
 import logging
 import subprocess
+import stat
 
 import pandas as pd
 
@@ -35,22 +36,30 @@ parser.add_argument('--out-dir', type=str, default='output',
 parser.add_argument('--log-dir', type=str, default='logs',
     help='log directory')
 
-parser.add_argument('--neoscan-dir', type=str,
+parser.add_argument('--neoscan-dir', type=str, default='/pecgs-neoscan/src/neoscan',
     help='root of neoscan src code')
 
-parser.add_argument('--optitype-script', type=str,
+parser.add_argument('--optitype-script', type=str, default='/pecgs-neoscan/src/neoscan/OptiTypePipeline.py',
     help='location of optitype script')
 
-parser.add_argument('--f-allele', type=str,
+parser.add_argument('--f-allele', type=str, default='/pecgs-neoscan/src/netmhc/netMHC-4.0/data/allelelist',
     help='f allele list')
 
-parser.add_argument('--netmhc', type=str,
+parser.add_argument('--netmhc', type=str, default='/pecgs-neoscan/src/netmhc/netMHC-4.0/netMHC',
     help='netMHC')
 
-parser.add_argument('--f-opti-config', type=str,
+parser.add_argument('--f-opti-config', type=str, default='/pecgs-neoscan/src/neoscan/config.ini',
     help='config opti')
 
 args = parser.parse_args()
+
+
+def check_executable(fp):
+    is_executable = os.access(fp, os.X_OK)
+    if not is_executable:
+        logging.info('making {f} executable'.format(f=fp))
+        st = os.stat(fp)
+        os.chmod(fp, st.st_mode | stat.S_IEXEC)
 
 
 def preprocess_maf(maf_fp, snp_vcf_fp, indel_vcf_fp):
@@ -164,6 +173,11 @@ def main():
     # Path(modified_log_dir).mkdir(parents=True, exist_ok=True)
     if not os.path.exists(modified_log_dir):
         os.makedirs(modified_log_dir)
+
+    # check netmhc executable
+    logging.info('checking netmhc at {f}'.format(f=args.netmhc))
+    check_executable(args.netmhc)
+
     run_neoscan(
         modified_out_dir, modified_log_dir, args.maf, args.bam,
         args.input_type, args.bed, args.ref_dir, args.optitype_script,
