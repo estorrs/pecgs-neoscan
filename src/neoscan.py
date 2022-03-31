@@ -5,6 +5,7 @@ UPDATE: converting to 2.7 so it works with optitype
 """
 import argparse
 import os
+import re
 import logging
 import subprocess
 import stat
@@ -64,6 +65,8 @@ def check_executable(fp):
 
 def preprocess_maf(maf_fp, snp_vcf_fp, indel_vcf_fp):
     maf = pd.read_csv(maf_fp, sep='\t', header=1)
+    maf['Chromosome'] = [re.sub(r'^chr(.*)$', r'\1', chrom)
+                         for chrom in maf['Chromosome']]
 
     valid = ['SNP']
     snp = maf[[True if s in valid else False
