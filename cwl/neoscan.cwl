@@ -60,11 +60,11 @@ label: neoscan
 outputs:
 - id: snv_summary
   outputBinding:
-    glob: output/sample.neo.snv.summary
+    glob: output/sample/sample.neo.snv.summary
   type: File
 - id: indel_summary
   outputBinding:
-    glob: output/sample.neo.indel.summary
+    glob: output/sample/sample.neo.indel.summary
   type: File
 requirements:
 - class: DockerRequirement
